@@ -1,8 +1,10 @@
 export enum WorldTiles {
 	Spawn,
-	End,
 	Path,
 	Mountain,
 	Forest,
-	Default
+	ForestQuad,
+	Default,
+	River,
+	Bridge
 }

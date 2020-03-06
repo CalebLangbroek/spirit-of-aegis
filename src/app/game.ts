@@ -14,24 +14,27 @@ import { OBJLoader2 } from 'three/examples/jsm/loaders/OBJLoader2';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { MtlObjBridge } from 'three/examples/jsm/loaders/obj2/bridge/MtlObjBridge';
 
-import { World } from './world';
+import { WorldManager } from './world-manager';
 import { WorldTiles } from './world-tiles.enum';
 import { Model } from './model';
 
-import BackgroundImage from '../assets/images/backgroundColorForest.png';
-import TileSpawnOBJ from '../assets/models/tile_spawn.obj';
-import TileSpawnMTL from '../assets/models/tile_spawn.mtl';
-import TileEndMTL from '../assets/models/tile_end.mtl';
-import TileEndOBJ from '../assets/models/tile_end.obj';
+import BackgroundImage from '../assets/images/backgroundEmpty.png';
+import TileSpawnOBJ from '../assets/models/tile_endSpawn.obj';
+import TileSpawnMTL from '../assets/models/tile_endSpawn.mtl';
 import TileDirtMTL from '../assets/models/tile_dirt.mtl';
 import TileDirtOBJ from '../assets/models/tile_dirt.obj';
 import TileHillOBJ from '../assets/models/tile_hill.obj';
 import TileHillMTL from '../assets/models/tile_hill.mtl';
 import TileTreeDoubleOBJ from '../assets/models/tile_treeDouble.obj';
 import TileTreeDoubleMTL from '../assets/models/tile_treeDouble.mtl';
+import TileTreeQuadOBJ from '../assets/models/tile_treeQuad.obj';
+import TileTreeQuadMTL from '../assets/models/tile_treeQuad.mtl';
 import TileDefaultOBJ from '../assets/models/tile.obj';
 import TileDefaultMTL from '../assets/models/tile.mtl';
-
+import TileRiverOBJ from '../assets/models/tile_riverStraight.obj';
+import TileRiverMTL from '../assets/models/tile_riverStraight.mtl';
+import TileRiverBridgeOBJ from '../assets/models/tile_riverBridge.obj';
+import TileRiverBridgeMTL from '../assets/models/tile_riverBridge.mtl';
 
 export class Game {
 	scene: Scene;
@@ -40,7 +43,7 @@ export class Game {
 	controls: OrbitControls;
 	loadingManager: LoadingManager;
 	models: Model[];
-	world: WorldTiles[][];
+	worldManager: WorldManager;
 
 	constructor() {}
 
@@ -59,9 +62,9 @@ export class Game {
 			0.1,
 			1000
 		);
-		this.camera.position.x = 2;
-		this.camera.position.z = 2;
-		this.camera.position.y = 2;
+		this.camera.position.x = 7;
+		this.camera.position.z = 7;
+		this.camera.position.y = 7;
 
 		// Setting up the renderer
 		this.renderer = new WebGLRenderer({ antialias: true });
@@ -82,13 +85,13 @@ export class Game {
 			this.camera,
 			this.renderer.domElement
 		);
-		this.controls.enablePan = false;
+		this.controls.enablePan = true;
 
 		// Add event listeners
 		window.addEventListener('resize', this.onResize.bind(this));
 
 		// Create the world
-		this.world = new World(10).getWorld();
+		this.worldManager = new WorldManager(22);
 
 		this.animate();
 	}
@@ -101,11 +104,6 @@ export class Game {
 				name: 'tile-spawn',
 				objUrl: TileSpawnOBJ,
 				mtlUrl: TileSpawnMTL
-			},
-			{
-				name: 'tile-end',
-				objUrl: TileEndOBJ,
-				mtlUrl: TileEndMTL
 			},
 			{
 				name: 'tile-dirt',
@@ -123,9 +121,24 @@ export class Game {
 				mtlUrl: TileTreeDoubleMTL
 			},
 			{
+				name: 'tile-tree-quad',
+				objUrl: TileTreeQuadOBJ,
+				mtlUrl: TileTreeQuadMTL
+			},
+			{
 				name: 'tile-default',
 				objUrl: TileDefaultOBJ,
 				mtlUrl: TileDefaultMTL
+			},
+			{
+				name: 'tile-river',
+				objUrl: TileRiverOBJ,
+				mtlUrl: TileRiverMTL
+			},
+			{
+				name: 'tile-river-bridge',
+				objUrl: TileRiverBridgeOBJ,
+				mtlUrl: TileRiverBridgeMTL
 			}
 		];
 
@@ -141,13 +154,14 @@ export class Game {
 	}
 
 	private loadWorld() {
-		const size = this.world.length;
+		const size = this.worldManager.getWorldSize();
+		const world = this.worldManager.getWorld();
 
 		for (let i = 0; i < size; i++) {
 			for (let j = 0; j < size; j++) {
-				const xOffset = i - Math.ceil(size / 2);
-				const zOffset = j - Math.ceil(size / 2);
-				this.addWorldTileToScene(this.world[i][j], xOffset, zOffset);
+				const xOffset = i - Math.floor(size / 2);
+				const zOffset = j - Math.floor(size / 2);
+				this.addWorldTileToScene(world[i][j], xOffset, zOffset);
 			}
 		}
 	}
@@ -160,6 +174,17 @@ export class Game {
 		const obj = this.models[modelIndex].obj.clone();
 		obj.translateX(xOffset);
 		obj.translateZ(zOffset);
+
+		// TODO: move tile rotation to separate class/function
+		if (modelIndex === WorldTiles.Forest) {
+			// Randomly rotate the forest tiles
+			obj.rotateY((Math.PI * Math.floor(Math.random() * 2)) / 2);
+		} else if (modelIndex === WorldTiles.River) {
+			obj.rotateY(Math.PI / 2);
+		} else if (modelIndex === WorldTiles.Bridge) {
+			obj.rotateY(Math.PI / 2);
+		}
+
 		this.scene.add(obj);
 	}
 
