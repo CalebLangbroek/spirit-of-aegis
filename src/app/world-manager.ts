@@ -1,17 +1,20 @@
-import { WorldTiles } from './world-tiles.enum';
+import { WorldTile } from './world-tile';
 import { WorldTileNode } from './world-tile-node';
 
 /** Class for managing the game world. */
 export class WorldManager {
-	private world: WorldTiles[][];
+	private world: WorldTile[][];
+	private path: WorldTileNode[];
 
 	/**
 	 * Create a world manager.
 	 *
 	 * @param size The size of the world.
+	 * @param towerCount The number of tower tiles.
 	 */
 	constructor(private size: number) {
-		this.world = this.generateWorld(size);
+		this.world = [[]];
+		this.generateWorld();
 	}
 
 	/**
@@ -19,7 +22,7 @@ export class WorldManager {
 	 *
 	 * @returns The world.
 	 */
-	getWorld(): WorldTiles[][] {
+	getWorld(): WorldTile[][] {
 		return this.world.slice();
 	}
 
@@ -33,106 +36,85 @@ export class WorldManager {
 	}
 
 	/**
-	 * Generate a world.
-	 *
-	 * @param size The size of the world.
-	 * @returns The world of size * size. Made up of world tiles.
+	 * Generate a new world.
 	 */
-	private generateWorld(size: number): WorldTiles[][] {
-		let world = this.generateTerrain(size);
-		world = this.generateRiver(world, size);
-		world = this.generatePath(world, size);
-		return world;
+	generateWorld() {
+		this.generateTerrain();
+		this.generateRiver();
+		this.generatePath();
 	}
 
 	/**
 	 * Generate the terrain of the world.
 	 * This is any tiles that don't have any interaction (ie. not a path or tower tile).
-	 *
-	 * @param size The size of the world.
-	 * @returns The world with terrain added.
 	 */
-	private generateTerrain(size: number): WorldTiles[][] {
-		const world: WorldTiles[][] = [[]];
-
+	private generateTerrain() {
 		// Randomly set the tiles to terrain tiles
-		for (let i = 0; i < size; i++) {
-			world[i] = [];
+		for (let i = 0; i < this.size; i++) {
+			this.world[i] = [];
 
-			for (let j = 0; j < size; j++) {
-				world[i][j] = this.randomInteger(
-					WorldTiles.River,
-					WorldTiles.Mountain
+			for (let j = 0; j < this.size; j++) {
+				const randomInteger = this.getRandomInteger(
+					WorldTile.River.key,
+					WorldTile.Mountain.key
 				);
+				const randomTile = WorldTile.Tiles[randomInteger];
+				this.world[i][j] = randomTile;
 			}
 		}
-
-		return world;
 	}
 
 	/**
 	 * Generates the path for enemies to walk down.
-	 *
-	 * @param world The world to add a path to.
-	 * @param size The size of the world.
-	 * @returns The world with path added.
 	 */
-	private generatePath(world: WorldTiles[][], size: number): WorldTiles[][] {
+	private generatePath() {
 		// Randomly select the starting tile
 		const startNode: WorldTileNode = {
 			x: 0,
-			z: this.randomInteger(size)
+			z: this.getRandomInteger(this.size)
 		};
-		world[startNode.z][0] = WorldTiles.Spawn;
+		this.world[startNode.z][0] = WorldTile.Spawn;
 
 		// Randomly select the ending tile
 		const goalNode: WorldTileNode = {
-			x: size - 1,
-			z: this.randomInteger(size)
+			x: this.size - 1,
+			z: this.getRandomInteger(this.size)
 		};
 
 		// Generate the path
-		const path = this.findShortestPath(startNode, goalNode);
-		for (const node of path) {
-			if (world[node.z][node.x] === WorldTiles.River) {
-				world[node.z][node.x] = WorldTiles.Bridge;
+		this.path = this.findShortestPath(startNode, goalNode);
+		for (const node of this.path) {
+			if (this.world[node.z][node.x] === WorldTile.River) {
+				this.world[node.z][node.x] = WorldTile.Bridge;
 			} else {
-				world[node.z][node.x] = WorldTiles.Path;
+				this.world[node.z][node.x] = WorldTile.Path;
 			}
 		}
-
-		return world;
 	}
 
 	/**
 	 * Generates a river for the world.
-	 *
-	 * @param world The world to add a river to.
-	 * @param size The size of the world.
-	 * @returns The world with the river added.
 	 */
-	private generateRiver(world: WorldTiles[][], size: number): WorldTiles[][] {
+	private generateRiver() {
 		// Randomly select the starting tile
 		const startNode: WorldTileNode = {
-			x: this.randomInteger(size),
+			x: this.getRandomInteger(this.size),
 			z: 0
 		};
-		world[0][startNode.x] = WorldTiles.River;
+		this.world[0][startNode.x] = WorldTile.River;
 
 		// Randomly select the ending tile
 		const goalNode: WorldTileNode = {
-			x: this.randomInteger(size),
-			z: size - 1
+			x: this.getRandomInteger(this.size),
+			z: this.size - 1
 		};
 
 		// Generate a path for the river
 		const path = this.findShortestPath(startNode, goalNode);
 
 		for (const node of path) {
-			world[node.z][node.x] = WorldTiles.River;
+			this.world[node.z][node.x] = WorldTile.River;
 		}
-
-		return world;
 	}
 
 	/**
@@ -230,7 +212,7 @@ export class WorldManager {
 	 * @param min The minimum for the random number.
 	 * @returns A random number.
 	 */
-	private randomInteger(max: number, min = 0): number {
+	private getRandomInteger(max: number, min = 0): number {
 		return Math.floor(Math.random() * (max - min) + min);
 	}
 }

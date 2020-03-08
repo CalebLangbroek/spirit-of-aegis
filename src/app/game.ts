@@ -15,26 +15,9 @@ import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
 import { MtlObjBridge } from 'three/examples/jsm/loaders/obj2/bridge/MtlObjBridge';
 
 import { WorldManager } from './world-manager';
-import { WorldTiles } from './world-tiles.enum';
-import { Model } from './model';
+import { WorldTile } from './world-tile';
 
 import BackgroundImage from '../assets/images/backgroundEmpty.png';
-import TileSpawnOBJ from '../assets/models/tile_endSpawn.obj';
-import TileSpawnMTL from '../assets/models/tile_endSpawn.mtl';
-import TileDirtMTL from '../assets/models/tile_dirt.mtl';
-import TileDirtOBJ from '../assets/models/tile_dirt.obj';
-import TileHillOBJ from '../assets/models/tile_hill.obj';
-import TileHillMTL from '../assets/models/tile_hill.mtl';
-import TileTreeDoubleOBJ from '../assets/models/tile_treeDouble.obj';
-import TileTreeDoubleMTL from '../assets/models/tile_treeDouble.mtl';
-import TileTreeQuadOBJ from '../assets/models/tile_treeQuad.obj';
-import TileTreeQuadMTL from '../assets/models/tile_treeQuad.mtl';
-import TileDefaultOBJ from '../assets/models/tile.obj';
-import TileDefaultMTL from '../assets/models/tile.mtl';
-import TileRiverOBJ from '../assets/models/tile_riverStraight.obj';
-import TileRiverMTL from '../assets/models/tile_riverStraight.mtl';
-import TileRiverBridgeOBJ from '../assets/models/tile_riverBridge.obj';
-import TileRiverBridgeMTL from '../assets/models/tile_riverBridge.mtl';
 
 export class Game {
 	scene: Scene;
@@ -42,7 +25,6 @@ export class Game {
 	renderer: WebGLRenderer;
 	controls: OrbitControls;
 	loadingManager: LoadingManager;
-	models: Model[];
 	worldManager: WorldManager;
 
 	constructor() {}
@@ -99,54 +81,11 @@ export class Game {
 	private loadModels() {
 		const mtlLoader = new MTLLoader(this.loadingManager);
 
-		this.models = [
-			{
-				name: 'tile-spawn',
-				objUrl: TileSpawnOBJ,
-				mtlUrl: TileSpawnMTL
-			},
-			{
-				name: 'tile-dirt',
-				objUrl: TileDirtOBJ,
-				mtlUrl: TileDirtMTL
-			},
-			{
-				name: 'tile-hill',
-				objUrl: TileHillOBJ,
-				mtlUrl: TileHillMTL
-			},
-			{
-				name: 'tile-tree-double',
-				objUrl: TileTreeDoubleOBJ,
-				mtlUrl: TileTreeDoubleMTL
-			},
-			{
-				name: 'tile-tree-quad',
-				objUrl: TileTreeQuadOBJ,
-				mtlUrl: TileTreeQuadMTL
-			},
-			{
-				name: 'tile-default',
-				objUrl: TileDefaultOBJ,
-				mtlUrl: TileDefaultMTL
-			},
-			{
-				name: 'tile-river',
-				objUrl: TileRiverOBJ,
-				mtlUrl: TileRiverMTL
-			},
-			{
-				name: 'tile-river-bridge',
-				objUrl: TileRiverBridgeOBJ,
-				mtlUrl: TileRiverBridgeMTL
-			}
-		];
-
-		for (const model of this.models) {
+		for (const tile of WorldTile.Tiles) {
 			mtlLoader.load(
-				model.mtlUrl,
+				tile.mtlUrl,
 				(material: MTLLoader.MaterialCreator) => {
-					this.onMTLLoad(material, model);
+					this.onMTLLoad(material, tile);
 				},
 				this.onProgress
 			);
@@ -167,21 +106,21 @@ export class Game {
 	}
 
 	private addWorldTileToScene(
-		modelIndex: number,
+		tile: WorldTile,
 		xOffset: number,
 		zOffset: number
 	) {
-		const obj = this.models[modelIndex].obj.clone();
+		const obj = tile.getObject3D();
 		obj.translateX(xOffset);
 		obj.translateZ(zOffset);
 
 		// TODO: move tile rotation to separate class/function
-		if (modelIndex === WorldTiles.Forest) {
+		if (tile === WorldTile.Forest) {
 			// Randomly rotate the forest tiles
 			obj.rotateY((Math.PI * Math.floor(Math.random() * 2)) / 2);
-		} else if (modelIndex === WorldTiles.River) {
+		} else if (tile === WorldTile.River) {
 			obj.rotateY(Math.PI / 2);
-		} else if (modelIndex === WorldTiles.Bridge) {
+		} else if (tile === WorldTile.Bridge) {
 			obj.rotateY(Math.PI / 2);
 		}
 
@@ -191,17 +130,17 @@ export class Game {
 	/**
 	 * MTL done loading callback.
 	 */
-	private onMTLLoad(material: MTLLoader.MaterialCreator, model: Model) {
+	private onMTLLoad(material: MTLLoader.MaterialCreator, tile: WorldTile) {
 		const objLoader = new OBJLoader2(this.loadingManager);
-		objLoader.setModelName(model.name);
+		// objLoader.setModelName(tile.name);
 		objLoader.addMaterials(
 			MtlObjBridge.addMaterialsFromMtlLoader(material),
 			true
 		);
 		objLoader.load(
-			model.objUrl,
+			tile.objUrl,
 			(obj: Object3D) => {
-				this.onOBJLoad(obj, model);
+				this.onOBJLoad(obj, tile);
 			},
 			this.onProgress
 		);
@@ -210,8 +149,8 @@ export class Game {
 	/**
 	 * OBJ done loading callback.
 	 */
-	private onOBJLoad(obj: Object3D, model: Model) {
-		model.obj = obj;
+	private onOBJLoad(obj: Object3D, tile: WorldTile) {
+		tile.setObject3D(obj);
 	}
 
 	/**
