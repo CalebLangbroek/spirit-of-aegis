@@ -3,7 +3,7 @@
 
 mtllib tile_riverStraight.mtl
 
-o tile_riverStraight.002
+o tile_riverStraight
 
 v -0.500000 -0.000000 0.500000
 v 0.500000 0.000000 -0.500000

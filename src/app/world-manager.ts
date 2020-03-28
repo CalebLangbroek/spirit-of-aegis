@@ -42,6 +42,7 @@ export class WorldManager {
 		this.generateTerrain();
 		this.generateRiver();
 		this.generatePath();
+		this.generatePath();
 	}
 
 	/**
