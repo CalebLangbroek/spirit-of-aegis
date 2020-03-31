@@ -14,7 +14,6 @@ import BackgroundImage from '../assets/images/background.png';
 import { WorldManager } from './world-manager';
 import { WorldTile } from './world-tile';
 import { ModelManager } from './model-manager';
-import { TowerEventHandler } from './tower-event-handler';
 import { EventManager } from './event-manager';
 
 export class Game {
@@ -68,8 +67,7 @@ export class Game {
 		this.controls.enablePan = false;
 
 		// Add event listeners
-		const towerEventHandler = new TowerEventHandler(this.scene, this.camera);
-		this.eventManager = new EventManager(towerEventHandler);
+		this.eventManager = new EventManager(this.scene, this.camera);
 		window.addEventListener('resize', this.onResize.bind(this), false);
 
 		// Create the world

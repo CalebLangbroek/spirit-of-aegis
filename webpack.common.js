@@ -4,7 +4,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
 	entry: './src/main.ts',
-	devtool: 'inline-source-map',
 	module: {
 		rules: [
 			{
@@ -14,15 +13,36 @@ module.exports = {
 			},
 			{
 				test: /\.html$/,
-				use: 'html-loader'
+				loader: 'html-loader',
+				options: {
+					attributes: {
+						list: [
+							{
+								tag: 'img',
+								attribute: 'src',
+								type: 'src'
+							}
+						]
+					}
+				}
 			},
 			{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader']
 			},
 			{
-				test: /\.(png|svg|jpg|obj|mtl)$/,
-				use: ['file-loader']
+				test: /\.(png|svg|jpg)$/,
+				loader:'file-loader',
+				options: {
+					name: 'assets/images/[name].[ext]'
+				}
+			},
+			{
+				test: /\.(obj|mtl)$/,
+				loader:'file-loader',
+				options: {
+					name: 'assets/models/[contenthash].[ext]'
+				}
 			}
 		]
 	},
@@ -32,12 +52,8 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(),
 		new HtmlWebpackPlugin({
-			title: 'Spirit of Aegis',
-			meta: {
-				viewport:
-					'width=device-width, initial-scale=1, shrink-to-fit=no',
-				description: 'A Tower Defense Game written in TypeScript.'
-			}
+			template: 'src/index.html',
+			favicon: 'src/favicon.ico'
 		})
 	],
 	output: {
