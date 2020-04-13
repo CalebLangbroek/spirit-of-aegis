@@ -11,17 +11,20 @@
 		<title>Spirit of Aegis</title>
 	</head>
 	<body>
-		<div class="container container-left">
-			<img
-				class="player-stats-img"
-				id="heart"
-				src="/assets/images/heart.png"
-			/>
-			<img
-				class="player-stats-img"
-				id="coin"
-				src="/assets/images/money.png"
-			/>
+		<div class="container-col container-left">
+			<div class="container-row">
+				<img class="player-stats-img" src="/assets/images/heart.png" />
+				<span id="health"></span>
+				<img class="player-stats-img" src="/assets/images/money.png" />
+				<span id="money"></span>
+				<img
+					class="player-stats-img"
+					src="/assets/images/enemy_ufoRed.png"
+				/>
+				<span id="enemies">0</span>
+				/
+				<span id="enemies">0</span>
+			</div>
 			<img
 				class="tower-img"
 				id="towerRound"
@@ -33,8 +36,8 @@
 				src="/assets/images/towerSquare.png"
 			/>
 		</div>
-		<div class="container container-right">
-			<button class="start-btn">
+		<div class="container-col container-right">
+			<button class="start-btn" id="start">
 				Start
 			</button>
 		</div>

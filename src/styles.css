@@ -1,22 +1,33 @@
 /* Global Styles */
+@font-face {
+	font-family: '04B';
+	src: url('./assets/fonts/04B.ttf') format('truetype');
+	font-style: normal;
+}
 
 body {
 	margin: 0;
+	font-family: '04B';
 }
 canvas {
 	display: block;
 }
-.container {
-	position: absolute;
+.container-col {
 	display: flex;
 	flex-direction: column;
 	padding: 25px;
 }
+.container-row {
+	display: flex;
+	align-items: center;
+}
 .container-left {
+	position: absolute;
 	top: 0;
 	left: 0;
 }
 .container-right {
+	position: absolute;
 	top: 0;
 	right: 0;
 }
@@ -30,7 +41,7 @@ canvas {
 	border-radius: 5px;
 }
 .tower-img-selected {
-	background-color: #2ecc92;
+	background-color: darkslategray;
 }
 .player-stats-img {
 	margin: 5px;
@@ -39,11 +50,12 @@ canvas {
 	height: auto;
 }
 .start-btn {
-	background-color: #2ecc92;
+	background-color: darkslategray;
 	color: white;
 	border: none;
 	border-radius: 5px;
 	padding: 10px 25px;
+	font-family: '04B';
 	font-weight: bold;
 	font-size: large;
 }

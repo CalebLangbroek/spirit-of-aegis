@@ -8,7 +8,7 @@ import { WorldTile } from './world-tile';
 import { TowerType } from './tower-type';
 import { ModelType } from './model-type';
 
-/** Class for managing models */
+/** Class for managing game models. */
 export class ModelManager {
 	private loadingManager: LoadingManager;
 	private mtlLoader: MTLLoader;

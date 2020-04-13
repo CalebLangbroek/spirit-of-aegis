@@ -5,25 +5,33 @@ import {
 	TextureLoader,
 	AmbientLight,
 	DirectionalLight,
-	RepeatWrapping
+	RepeatWrapping,
+	Vector2,
+	Raycaster,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import BackgroundImage from '../assets/images/background.png';
 
+import { Utils } from './utils/utils';
 import { WorldManager } from './world-manager';
-import { WorldTile } from './world-tile';
 import { ModelManager } from './model-manager';
 import { EventManager } from './event-manager';
+import { WorldTile } from './world-tile';
+import { TowerType } from './tower-type';
+import { Player } from './player';
+import { EventCallbacks } from './event-callbacks';
 
 export class Game {
-	scene: Scene;
-	camera: PerspectiveCamera;
-	renderer: WebGLRenderer;
-	controls: OrbitControls;
-	worldManager: WorldManager;
-	modelManager: ModelManager;
-	eventManager: EventManager;
+	private selectedTower: TowerType;
+	private scene: Scene;
+	private camera: PerspectiveCamera;
+	private renderer: WebGLRenderer;
+	private controls: OrbitControls;
+	private worldManager: WorldManager;
+	private modelManager: ModelManager;
+	private eventManager: EventManager;
+	private player: Player;
 
 	constructor() {}
 
@@ -67,8 +75,19 @@ export class Game {
 		this.controls.enablePan = false;
 
 		// Add event listeners
-		this.eventManager = new EventManager(this.scene, this.camera);
-		window.addEventListener('resize', this.onResize.bind(this), false);
+		const callbacks: EventCallbacks = {
+			resize: this.onResize.bind(this),
+			mouseRightClick: this.buildTower.bind(this),
+			mouseMove: this.hoverTower.bind(this),
+			towerClick: this.selectTower.bind(this),
+			startClick: this.startGame.bind(this),
+		};
+		this.eventManager = new EventManager(callbacks);
+
+		// Initialize player
+		this.player = new Player();
+		this.player.setHealth(10);
+		this.player.setMoney(200);
 
 		// Create the world
 		this.worldManager = new WorldManager(22);
@@ -125,5 +144,92 @@ export class Game {
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+
+	private startGame(): void {}
+
+	private buildTower(mouse: Vector2): void {
+		// No tower selected, nothing to build
+		if (!this.selectedTower) {
+			return;
+		}
+
+		const raycaster = new Raycaster();
+		raycaster.setFromCamera(mouse, this.camera);
+		const intersects = raycaster.intersectObjects(
+			this.scene.children,
+			true
+		);
+
+		// Check if mouse intersected with any tiles
+		if (intersects.length < 1) {
+			return;
+		}
+
+		const intersect = intersects[0];
+
+		// Can't add tower on certain tiles
+		const noBuildTiles = [
+			WorldTile.River.name,
+			WorldTile.Path.name,
+			WorldTile.River.name,
+			WorldTile.Spawn.name,
+			WorldTile.Bridge.name,
+		];
+
+		if (noBuildTiles.includes(intersect.object.parent.name)) {
+			return;
+		}
+
+		// Check that the player has enough money
+		if (this.player.getMoney() < this.selectedTower.cost) {
+			return;
+		}
+
+		// Add tower to tile clicked
+		const point = intersect.point;
+		const obj = this.selectedTower.getObject3D();
+		obj.translateX(Math.round(point.x));
+		obj.translateY(0.2);
+		obj.translateZ(Math.round(point.z));
+		this.scene.add(obj);
+
+		this.player.setMoney(this.player.getMoney() - this.selectedTower.cost);
+	}
+
+	private hoverTower(mouse: Vector2) {
+		// TODO: implement the hover tower
+		console.log(`mouse hovered`);
+	}
+
+	private selectTower(towerID: string): void {
+		// Remove the selected class from the currently selected tower
+		if (this.selectedTower) {
+			Utils.removeCSSClassByID(
+				this.selectedTower.name,
+				'tower-img-selected'
+			);
+		}
+
+		// Check all tower types
+		for (const tower of TowerType.Towers) {
+			// Check if the tower type was selected
+			if (tower.name === towerID) {
+				if (this.selectedTower == tower) {
+					// Same tower as current tower so deselect
+					this.selectedTower = undefined;
+
+					// Remove event listener for hovering the tower
+					this.eventManager.removeMouseMoveListener();
+				} else {
+					this.selectedTower = tower;
+					Utils.addCSSClassByID(
+						this.selectedTower.name,
+						'tower-img-selected'
+					);
+					this.eventManager.addMouseMoveListener();
+				}
+			}
+		}
 	}
 }

@@ -43,7 +43,14 @@ module.exports = {
 				options: {
 					name: 'assets/models/[contenthash].[ext]'
 				}
-			}
+			},
+			{
+				test: /\.(ttf)$/,
+				loader:'file-loader',
+				options: {
+					name: 'assets/fonts/[name].[ext]'
+				}
+			},
 		]
 	},
 	resolve: {
