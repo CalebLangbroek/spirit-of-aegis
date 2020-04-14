@@ -32,16 +32,14 @@ canvas {
 	right: 0;
 }
 .tower-img {
-	width: 60px;
+	width: 50px;
 	height: auto;
 	margin: 5px;
 	padding: 5px;
-	border: 1px solid #c3e6cb;
-	background-color: white;
-	border-radius: 5px;
+	filter: grayscale(100%);
 }
 .tower-img-selected {
-	background-color: darkslategray;
+	filter: none;
 }
 .player-stats-img {
 	margin: 5px;
@@ -49,7 +47,7 @@ canvas {
 	width: 25px;
 	height: auto;
 }
-.start-btn {
+.toggle-btn {
 	background-color: darkslategray;
 	color: white;
 	border: none;

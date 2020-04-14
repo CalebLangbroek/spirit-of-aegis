@@ -17,6 +17,7 @@ import { Utils } from './utils/utils';
 import { WorldManager } from './world-manager';
 import { ModelManager } from './model-manager';
 import { EventManager } from './event-manager';
+import { EnemyManager } from './enemy-manager';
 import { WorldTile } from './world-tile';
 import { TowerType } from './tower-type';
 import { Player } from './player';
@@ -31,7 +32,9 @@ export class Game {
 	private worldManager: WorldManager;
 	private modelManager: ModelManager;
 	private eventManager: EventManager;
+	private enemyManager: EnemyManager;
 	private player: Player;
+	private isRunning: boolean;
 
 	constructor() {}
 
@@ -80,17 +83,23 @@ export class Game {
 			mouseRightClick: this.buildTower.bind(this),
 			mouseMove: this.hoverTower.bind(this),
 			towerClick: this.selectTower.bind(this),
-			startClick: this.startGame.bind(this),
+			toggleClick: this.toggleGameRunning.bind(this),
 		};
 		this.eventManager = new EventManager(callbacks);
 
 		// Initialize player
-		this.player = new Player();
-		this.player.setHealth(10);
-		this.player.setMoney(200);
+		this.player = new Player(10, 200);
+		this.isRunning = false;
 
 		// Create the world
 		this.worldManager = new WorldManager(22);
+
+		this.enemyManager = new EnemyManager(
+			this.scene,
+			this.player,
+			this.worldManager,
+			1
+		);
 
 		this.animate();
 	}
@@ -101,8 +110,8 @@ export class Game {
 
 		for (let i = 0; i < size; i++) {
 			for (let j = 0; j < size; j++) {
-				const xOffset = i - Math.floor(size / 2);
-				const zOffset = j - Math.floor(size / 2);
+				const zOffset = Utils.convertPosToSceneOffset(i, size);
+				const xOffset = Utils.convertPosToSceneOffset(j, size);
 				this.addWorldTileToScene(world[i][j], xOffset, zOffset);
 			}
 		}
@@ -120,9 +129,7 @@ export class Game {
 		// TODO: move tile rotation to separate class/function
 		if (tile === WorldTile.Forest) {
 			// Randomly rotate the forest tiles
-			obj.rotateY((Math.PI * Math.floor(Math.random() * 2)) / 2);
-		} else if (tile === WorldTile.River) {
-			obj.rotateY(Math.PI / 2);
+			obj.rotateY((Math.PI * Utils.getRandomInteger(2)) / 2);
 		} else if (tile === WorldTile.Bridge) {
 			obj.rotateY(Math.PI / 2);
 		}
@@ -136,6 +143,10 @@ export class Game {
 	private animate() {
 		requestAnimationFrame(this.animate.bind(this));
 
+		if (this.isRunning && this.player.getHealth() > 0) {
+			this.enemyManager.update();
+		}
+
 		this.renderer.render(this.scene, this.camera);
 	}
 
@@ -146,7 +157,11 @@ export class Game {
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
 	}
 
-	private startGame(): void {}
+	private toggleGameRunning(): void {
+		this.isRunning = !this.isRunning;
+		const toggleBtnText = this.isRunning ? 'Pause' : 'Resume';
+		Utils.setInnerTextByID('toggle', toggleBtnText);
+	}
 
 	private buildTower(mouse: Vector2): void {
 		// No tower selected, nothing to build
@@ -199,7 +214,7 @@ export class Game {
 
 	private hoverTower(mouse: Vector2) {
 		// TODO: implement the hover tower
-		console.log(`mouse hovered`);
+		console.log(`X: ${mouse.x}, Y: ${mouse.y}`);
 	}
 
 	private selectTower(towerID: string): void {
@@ -215,7 +230,7 @@ export class Game {
 		for (const tower of TowerType.Towers) {
 			// Check if the tower type was selected
 			if (tower.name === towerID) {
-				if (this.selectedTower == tower) {
+				if (this.selectedTower === tower) {
 					// Same tower as current tower so deselect
 					this.selectedTower = undefined;
 

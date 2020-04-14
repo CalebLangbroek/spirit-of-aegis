@@ -31,8 +31,8 @@ export class EventManager {
 		);
 
 		document
-			.getElementById('start')
-			.addEventListener('click', this.callbacks.startClick);
+			.getElementById('toggle')
+			.addEventListener('click', this.callbacks.toggleClick);
 	}
 
 	private onMouseDown(event: MouseEvent) {

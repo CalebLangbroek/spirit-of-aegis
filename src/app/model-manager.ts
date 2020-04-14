@@ -7,6 +7,7 @@ import { MtlObjBridge } from 'three/examples/jsm/loaders/obj2/bridge/MtlObjBridg
 import { WorldTile } from './world-tile';
 import { TowerType } from './tower-type';
 import { ModelType } from './model-type';
+import { EnemyType } from './enemy-type';
 
 /** Class for managing game models. */
 export class ModelManager {
@@ -28,6 +29,9 @@ export class ModelManager {
 
 		// Load towers
 		this.loadModelType(TowerType.Towers);
+
+		// Load enemy models
+		this.loadModelType(EnemyType.Enemies);
 	}
 
 	/**

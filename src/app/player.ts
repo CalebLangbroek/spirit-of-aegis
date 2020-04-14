@@ -1,10 +1,13 @@
-import { Utils } from "./utils/utils";
+import { Utils } from './utils/utils';
 
 export class Player {
-	private money = 0;
-	private health = 0;
+	private money: number;
+	private health: number;
 
-	constructor() {}
+	constructor(health: number = 0, money: number = 0) {
+		this.setHealth(health);
+		this.setMoney(money);
+	}
 
 	getHealth() {
 		return this.health;
