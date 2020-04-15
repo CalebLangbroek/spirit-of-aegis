@@ -6,7 +6,6 @@ import { Utils } from './utils/utils';
 export class WorldManager {
 	private world: WorldTile[][];
 	private paths: WorldTileNode[][];
-	private spawnTiles: WorldTileNode[];
 
 	/**
 	 * Create a world manager.
@@ -17,7 +16,6 @@ export class WorldManager {
 	constructor(private size: number) {
 		this.world = [[]];
 		this.paths = [];
-		this.spawnTiles = [];
 		this.generateWorld();
 	}
 
@@ -37,10 +35,6 @@ export class WorldManager {
 	 */
 	getWorldSize(): number {
 		return this.size;
-	}
-
-	getSpawnTiles(): WorldTileNode[] {
-		return this.spawnTiles.slice();
 	}
 
 	getPaths() {
@@ -81,14 +75,15 @@ export class WorldManager {
 	 * Generates the path for enemies to walk down.
 	 */
 	private generatePath() {
+		// Initalize the path
+		let path: WorldTileNode[] = [];
+
 		// Randomly select the starting tile
 		const startNode: WorldTileNode = {
 			x: 0,
 			z: Utils.getRandomInteger(this.size),
 		};
-		this.spawnTiles.push(startNode);
-
-		this.world[startNode.z][0] = WorldTile.Spawn;
+		path.push(startNode);
 
 		// Randomly select the ending tile
 		const goalNode: WorldTileNode = {
@@ -97,7 +92,7 @@ export class WorldManager {
 		};
 
 		// Generate the path
-		const path = this.findShortestPath(startNode, goalNode);
+		path = path.concat(this.findShortestPath(startNode, goalNode));
 		this.paths.push(path);
 		for (const node of path) {
 			if (this.world[node.z][node.x] === WorldTile.River) {
@@ -106,6 +101,8 @@ export class WorldManager {
 				this.world[node.z][node.x] = WorldTile.Path;
 			}
 		}
+
+		this.world[startNode.z][0] = WorldTile.Spawn;
 	}
 
 	/**

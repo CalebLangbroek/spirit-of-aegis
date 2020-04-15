@@ -7,7 +7,6 @@ import {
 	DirectionalLight,
 	RepeatWrapping,
 	Vector2,
-	Raycaster,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -18,13 +17,12 @@ import { WorldManager } from './world-manager';
 import { ModelManager } from './model-manager';
 import { EventManager } from './event-manager';
 import { EnemyManager } from './enemy-manager';
+import { TowerManager } from './tower-manager';
 import { WorldTile } from './world-tile';
-import { TowerType } from './tower-type';
 import { Player } from './player';
 import { EventCallbacks } from './event-callbacks';
 
 export class Game {
-	private selectedTower: TowerType;
 	private scene: Scene;
 	private camera: PerspectiveCamera;
 	private renderer: WebGLRenderer;
@@ -33,8 +31,10 @@ export class Game {
 	private modelManager: ModelManager;
 	private eventManager: EventManager;
 	private enemyManager: EnemyManager;
+	private towerManager: TowerManager;
 	private player: Player;
 	private isRunning: boolean;
+	private previousUpdateTime = 0;
 
 	constructor() {}
 
@@ -77,6 +77,13 @@ export class Game {
 		);
 		this.controls.enablePan = false;
 
+		// Initialize player
+		this.player = new Player(10, 200);
+		this.isRunning = false;
+
+		// Create the world
+		this.worldManager = new WorldManager(22);
+
 		// Add event listeners
 		const callbacks: EventCallbacks = {
 			resize: this.onResize.bind(this),
@@ -87,21 +94,23 @@ export class Game {
 		};
 		this.eventManager = new EventManager(callbacks);
 
-		// Initialize player
-		this.player = new Player(10, 200);
-		this.isRunning = false;
+		this.towerManager = new TowerManager(
+			this.scene,
+			this.player,
+			this.camera,
+			this.eventManager
+		);
 
-		// Create the world
-		this.worldManager = new WorldManager(22);
-
+		// Set up enemy manager
 		this.enemyManager = new EnemyManager(
 			this.scene,
 			this.player,
 			this.worldManager,
-			1
+			this.towerManager,
+			3
 		);
 
-		this.animate();
+		requestAnimationFrame(this.animate.bind(this))
 	}
 
 	private loadWorld() {
@@ -140,14 +149,19 @@ export class Game {
 	/**
 	 * Animation callback.
 	 */
-	private animate() {
-		requestAnimationFrame(this.animate.bind(this));
+	private animate(currentTime: number) {
+		// Convert to seconds
+		currentTime /= 1000;
 
-		if (this.isRunning && this.player.getHealth() > 0) {
-			this.enemyManager.update();
+		if (currentTime - this.previousUpdateTime > 0.05 && this.isRunning && this.player.getHealth() > 0) {
+			this.enemyManager.update(currentTime);
+
+			this.previousUpdateTime = currentTime;
 		}
 
 		this.renderer.render(this.scene, this.camera);
+
+		requestAnimationFrame(this.animate.bind(this));
 	}
 
 	private onResize() {
@@ -164,87 +178,14 @@ export class Game {
 	}
 
 	private buildTower(mouse: Vector2): void {
-		// No tower selected, nothing to build
-		if (!this.selectedTower) {
-			return;
-		}
-
-		const raycaster = new Raycaster();
-		raycaster.setFromCamera(mouse, this.camera);
-		const intersects = raycaster.intersectObjects(
-			this.scene.children,
-			true
-		);
-
-		// Check if mouse intersected with any tiles
-		if (intersects.length < 1) {
-			return;
-		}
-
-		const intersect = intersects[0];
-
-		// Can't add tower on certain tiles
-		const noBuildTiles = [
-			WorldTile.River.name,
-			WorldTile.Path.name,
-			WorldTile.River.name,
-			WorldTile.Spawn.name,
-			WorldTile.Bridge.name,
-		];
-
-		if (noBuildTiles.includes(intersect.object.parent.name)) {
-			return;
-		}
-
-		// Check that the player has enough money
-		if (this.player.getMoney() < this.selectedTower.cost) {
-			return;
-		}
-
-		// Add tower to tile clicked
-		const point = intersect.point;
-		const obj = this.selectedTower.getObject3D();
-		obj.translateX(Math.round(point.x));
-		obj.translateY(0.2);
-		obj.translateZ(Math.round(point.z));
-		this.scene.add(obj);
-
-		this.player.setMoney(this.player.getMoney() - this.selectedTower.cost);
+		this.towerManager.addTower(mouse);
 	}
 
 	private hoverTower(mouse: Vector2) {
 		// TODO: implement the hover tower
-		console.log(`X: ${mouse.x}, Y: ${mouse.y}`);
 	}
 
 	private selectTower(towerID: string): void {
-		// Remove the selected class from the currently selected tower
-		if (this.selectedTower) {
-			Utils.removeCSSClassByID(
-				this.selectedTower.name,
-				'tower-img-selected'
-			);
-		}
-
-		// Check all tower types
-		for (const tower of TowerType.Towers) {
-			// Check if the tower type was selected
-			if (tower.name === towerID) {
-				if (this.selectedTower === tower) {
-					// Same tower as current tower so deselect
-					this.selectedTower = undefined;
-
-					// Remove event listener for hovering the tower
-					this.eventManager.removeMouseMoveListener();
-				} else {
-					this.selectedTower = tower;
-					Utils.addCSSClassByID(
-						this.selectedTower.name,
-						'tower-img-selected'
-					);
-					this.eventManager.addMouseMoveListener();
-				}
-			}
-		}
+		this.towerManager.selectTower(towerID);
 	}
 }

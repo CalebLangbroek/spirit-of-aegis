@@ -15,13 +15,17 @@ export class TowerType extends ModelType {
 		'towerSquare',
 		TowerSquareOBJ,
 		TowerSquareMTL,
-		100
+		100,
+		2,
+		1
 	);
 	static readonly TowerRound = new TowerType(
 		'towerRound',
 		TowerRoundOBJ,
 		TowerRoundMTL,
-		100
+		100,
+		1,
+		2
 	);
 
 	readonly key: number;
@@ -30,7 +34,9 @@ export class TowerType extends ModelType {
 		name: string,
 		objUrl: string,
 		mtlUrl: string,
-		readonly cost: number
+		readonly cost: number,
+		readonly range: number,
+		readonly dps: number
 	) {
 		super(name, objUrl, mtlUrl);
 		this.key = TowerType.index++;
