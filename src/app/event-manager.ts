@@ -3,11 +3,10 @@ import { EventCallbacks } from './event-callbacks';
 
 /** Class for setting up DOM event listeners. */
 export class EventManager {
-	private onMouseMoveBound: any;
+	// Here we need to store the listener as a variable so we can remove it
+	private onMouseMoveBound = this.onMouseMove.bind(this);
 
 	constructor(private callbacks: EventCallbacks) {
-		// Here we need to store the listener as a variable so we can remove it
-		this.onMouseMoveBound = this.onMouseMove.bind(this);
 		this.addEventListeners();
 	}
 

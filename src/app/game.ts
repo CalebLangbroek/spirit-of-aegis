@@ -33,7 +33,7 @@ export class Game {
 	private enemyManager: EnemyManager;
 	private towerManager: TowerManager;
 	private player: Player;
-	private isRunning: boolean;
+	private isRunning = false;
 	private previousUpdateTime = 0;
 
 	constructor() {}
@@ -79,7 +79,6 @@ export class Game {
 
 		// Initialize player
 		this.player = new Player(10, 200);
-		this.isRunning = false;
 
 		// Create the world
 		this.worldManager = new WorldManager(22);
@@ -110,7 +109,7 @@ export class Game {
 			3
 		);
 
-		requestAnimationFrame(this.animate.bind(this))
+		requestAnimationFrame(this.animate.bind(this));
 	}
 
 	private loadWorld() {
@@ -153,7 +152,11 @@ export class Game {
 		// Convert to seconds
 		currentTime /= 1000;
 
-		if (currentTime - this.previousUpdateTime > 0.05 && this.isRunning && this.player.getHealth() > 0) {
+		if (
+			currentTime - this.previousUpdateTime > 0.05 &&
+			this.isRunning &&
+			this.player.getHealth() > 0
+		) {
 			this.enemyManager.update(currentTime);
 
 			this.previousUpdateTime = currentTime;

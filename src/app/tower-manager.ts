@@ -8,7 +8,7 @@ import { Player } from './player';
 import { Tower } from './tower';
 
 export class TowerManager {
-	private towers: Tower[];
+	private towers: Tower[] = [];
 	private selectedTower: TowerType;
 
 	constructor(
@@ -16,9 +16,7 @@ export class TowerManager {
 		private player: Player,
 		private camera: Camera,
 		private eventManager: EventManager
-	) {
-		this.towers = [];
-	}
+	) {}
 
 	getTowers() {
 		return this.towers.slice();

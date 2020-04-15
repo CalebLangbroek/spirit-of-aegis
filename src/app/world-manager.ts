@@ -4,8 +4,8 @@ import { Utils } from './utils/utils';
 
 /** Class for managing the game world. */
 export class WorldManager {
-	private world: WorldTile[][];
-	private paths: WorldTileNode[][];
+	private world: WorldTile[][] = [];
+	private paths: WorldTileNode[][] = [];
 
 	/**
 	 * Create a world manager.
@@ -14,8 +14,6 @@ export class WorldManager {
 	 * @param towerCount The number of tower tiles.
 	 */
 	constructor(private size: number) {
-		this.world = [[]];
-		this.paths = [];
 		this.generateWorld();
 	}
 

@@ -6,11 +6,7 @@ A Tower Defense Game written in TypeScript.
 
 Spirit of Aegis is a tower defense game written in TypeScript. It uses the Three.js JavaScript Library.
 
-## Contributing
-
-All contributions to the project are welcome.
-
-### Developing
+## Developing
 
 To work on the project:
 
@@ -20,10 +16,14 @@ To work on the project:
 4. Run `npm run dev` to start a development server.
 5. Open your browser and navigate to `http://localhost:8080`.
 
-### Building
+## Building
 
 To build the project:
 
 1. Run `npm run build`.
 
 This will compile the files into the `./dist` folder.
+
+## Credit
+
+Game assets are made available under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) and can be found [here](https://kenney.nl/assets/tower-defense-kit).
